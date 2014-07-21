@@ -196,7 +196,8 @@ value$value_false <- NULL
 
 ### Writing the CSV files. 
 write.csv(indicator, 'data/cps/indicator.csv', row.names = F)
-write.csv(value, 'data/cps/value.csv', row.names = F)
+x <- na.omit(value)  # aparently the value is coming with a few NAs -- check!
+write.csv(x, 'data/cps/value.csv', row.names = F)
 write.csv(dataset, 'data/cps/dataset.csv', row.names = F)
 source('code/create_configuration.R')
 createConfiguration(src = 'ocha_colombia_sidih')

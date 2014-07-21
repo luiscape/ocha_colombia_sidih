@@ -1,49 +1,59 @@
-## Plotting scrips. 
-
+## Plotting scripts.
 library(ggplot2)
+library(RCurl)
 
-plotColombia <- function(df = NULL) { 
-    x <- value[value$indID == 'COL.B.POP.0001', ]
-    y <- x[nchar(x$region) == 2, ]
-    y$period <- as.Date(y$period, format = '%Y')
-    base <- ggplot(y) + theme_bw()
-    base + geom_line(aes(period, value, color = region), size = 1.3) + 
-        geom_point(aes(period, value, color = region))
+# loading data
+value <- read.csv('data/cps/value.csv')
+
+# function that takes one indicator as basis and generates a series of plots
+plotIndicator <- function(df = NULL, indicator = NULL, admin = 2) {
+    
+    # sanity check
+    if (is.null(df) == TRUE) stop('Remember to provide a data.frame.')
+    if (is.null(indicator) == TRUE) stop('Remember to provide an indicator')
+    if ((indicator %in% df$indicator) == FALSE) stop("The indicator isn't in the data.frame.")
+    if (is.null(admin) == TRUE) stop('Provide an integer between 1 and 3')
+    
+    # subsetting data
+    # only admins2 for now
+    if (admin == 2) {
+        ind_data <- df[df$indID == indicator, ]
+        ind_data <- na.omit(ind_data)  # cleaning NAs -- check this on original file
+        ind_data <- col_ind[nchar(as.character(ind_data$region)) == 5 |
+                            nchar(as.character(ind_data$region)) == 6, ]
+        ind_data$value <- as.numeric(ind_data$value)
+    }
+    
+    # getting the location name from Divipola
+    # not all codes are mapped in the latest
+    # version of Divipola
+    temporaryFile <- tempfile()
+    download.file('https://raw.githubusercontent.com/luiscape/colombia_pcode/master/data/col_admin2.csv', destfile=temporaryFile, method="curl")
+    admin2_names <- read.csv(temporaryFile)
+    admin2_names[1] <- NULL  # dropping not necessary columns
+    
+    # getting the admin 2 names
+    ind_data
+    
+    
 }
 
+y <- merge(x, admin2_names, by.x = 'region', by.y = 'hdx_pcode', all.x = TRUE)
 
-download.file('https://raw.githubusercontent.com/luiscape/data-for-frog/master/frog_data/csv/value.csv', destfile = 'temp.csv', method = 'curl')
 
-frog_data <- read.csv('temp.csv')
-frog_data_sub <- frog_data[nchar(as.character(frog_data$period)) == 4, ]
-
-# how much data we had before Colombia
-frog_data_sub$period <- as.Date(frog_data_sub$period, format = "%Y")
-frog_data_sub$source_plot <- 'cps'
-ggplot(frog_data_sub) + theme_bw() + 
-    geom_bar(aes(period, fill = dsID), stat = 'bin') +
-    scale_x_date(limits = c(as.Date('1940', format = '%Y'), 
-                            as.Date('2014', format = '%Y')))
-
-# in grey
-ggplot(frog_data_sub) + theme_bw() + 
-    geom_bar(aes(period), stat = 'bin', fill = "#CCCCCC") +
-    scale_x_date(limits = c(as.Date('1940', format = '%Y'), 
-                            as.Date('2014', format = '%Y')))
-
-# only Colombia
-value_sub <- value[nchar(value$period) == 4, ]
-value_sub$period <- as.Date(value_sub$period, format = '%Y')
-value_sub$source_plot <- 'colombia'
-ggplot(value_sub) + theme_bw() + 
-    geom_bar(aes(period), stat = 'bin', fill = '#404040')
-
-# all data
-data_for_plot <- plyr::rbind.fill(frog_data_sub, value_sub)
-
-# all data plot
-ggplot(data_for_plot, aes(fill = dsID)) + theme_bw() + 
-    geom_bar(aes(period), stat = 'bin') +
-    scale_x_date(limits = c(as.Date('1940', format = '%Y'),
-                            as.Date('2014', format = '%Y')))
-
+# creating sparklines from the GDP indicators in the
+# districts of Colombia
+ggplot(col_ind_1, aes(period, value, group = region)) + theme_bw() +
+    geom_line(stat = 'identity', size = 1, color = "#F1645A") +
+    facet_wrap(~ region, scale = 'free_y') +
+    theme(panel.border = element_rect(linetype = 0),
+         strip.background = element_rect(colour = "white", fill = "white"),
+#          strip.text = element_text(angle = 90, size = 10, hjust = 0.5, vjust = 0.5),
+         panel.background = element_rect(colour = "white"),
+         panel.grid.major = element_blank(),
+         panel.grid.minor = element_blank(),
+         axis.text.x = element_blank(),
+         axis.text.y = element_blank(),
+         axis.ticks = element_blank()) +
+    ylab("") + xlab("")
+    
