@@ -2,7 +2,7 @@ OCHA Colombia
 =============
 Script to transform the OCHA Colombia databae into the HDX format (CPS). It loads a database with 1,276,335 values, transforms the entities and timespans of the observations into those accepted by CPS.
 
-The file `value.csv` is too big for GitHub (400 + mb). You will find that file inside the compressed file `[ocha-colombia-sidih.zip](data/cps/ocha-colombia-sidih.zip)`.
+The file `value.csv` is too big for GitHub (400 + mb). You will find that file inside the compressed file [ocha-colombia-sidih.zip](data/cps/ocha-colombia-sidih.zip).
 
 
 
